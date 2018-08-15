@@ -40,7 +40,7 @@ end
 
 fileListPOm = fileList;
 
-fileList = dir('awake/POm/'+'awake/VPm/');
+fileList = dir('awake/VPm/');
 
 downSampleSpike = 200;
 downSampleLFP = 1;
@@ -70,12 +70,16 @@ for i = 1:length(fileList)
             minSize = min(size(LFP,1),size(spike_serie,1));
             LFP = LFP(1:minSize,:);
             spike_serie = spike_serie(1:minSize,:);
-            fprintf('Analysis for N= %d\n',N)
-            [gcm,gcer] = demo(LFP,spike_serie,N);
-            display(gcm);
-            display(gcer);
-            fileList(i).gcm = gcm;
-            fileList(i).gcer = gcer;
+            fprintf('Analysis for N= %d\n',i)
+            try
+                [gcm,gcer] = demo(LFP,spike_serie,1);
+                display(gcm);
+                display(gcer);
+                fileList(i).gcm = gcm;
+                fileList(i).gcer = gcer;
+            catch
+                continue
+            end
         end
     end
 end
