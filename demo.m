@@ -1,4 +1,4 @@
-function [gcm, gcer]= demo(LFP, Spikes,index)
+function [gcm, gcer,gc12_all,gc21_all]= demo(LFP, Spikes,index,mask)
 
 
 M=size(LFP,2); %% trial
@@ -19,8 +19,8 @@ for n=1:M
      fprintf('Iteration %d out of %d\n',n, M);
 %    Y1=squeeze(dat(n,:,1)); % LFP
 %    Y2=squeeze(dat(n,:,2)); % Spike
-    Y1 = LFP(:,n);
-    Y2 = Spikes(:,n);
+    Y1 = LFP(mask(:,n),n);
+    Y2 = Spikes(mask(:,n),n);
     
     Y1 = (Y1-mean(Y1))/std(Y1);
     windowWidth = 20; % Whatever you want.
@@ -46,7 +46,8 @@ for n=1:M
     %     [gc12 gc21 para Lik]=Mixed_GC_Gauss_fminunc_multistart(Y1,Y2,porder,options,msflag);
         gc12_all = [gc12_all,gc12]; % GC from 1->2
         gc21_all = [gc21_all,gc21]; % GC from 2->1
-        para_all = [para_all;para]; % model parameter  
+        para_all = [para_all;para]; % model parameter
+ 
     catch
         continue
     end

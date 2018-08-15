@@ -1,6 +1,6 @@
 fileList = dir('awake/POm/');
 
-downSampleSpike = 200;
+downSampleSpike = 20;
 downSampleLFP = 1;
 
 for i = 1:length(fileList)
@@ -22,18 +22,35 @@ for i = 1:length(fileList)
             spike_serie = sum(spike_serie,2);
             spike_serie = spike_serie(1:100*floor(size(spike_serie,1)/100));
 
+            whisker = data.Triggers.whisker*1;
+            whisker = whisker(1:downSampleSpike*floor(size(whisker,2)/downSampleSpike));
+            whisker = reshape(whisker,floor(size(whisker,2)/downSampleSpike),downSampleSpike);
+            whisker = sum(whisker,2);
+            whisker = whisker(1:100*floor(size(spike_serie,1)/100));
+            
+            
             LFP = reshape(LFP, [floor(size(LFP,1)/100),100]);
             spike_serie = reshape(spike_serie, [floor(size(spike_serie,1)/100),100]);
+            whisker = reshape(whisker, [floor(size(whisker,1)/100),100]);
 
             minSize = min(size(LFP,1),size(spike_serie,1));
             LFP = LFP(1:minSize,:);
             spike_serie = spike_serie(1:minSize,:);
             fprintf('Analysis for N= %d\n',i)
-            [gcm,gcer] = demo(LFP,spike_serie,1);
-            display(gcm);
-            display(gcer);
-            fileList(i).gcm = gcm;
-            fileList(i).gcer = gcer;
+            try
+                mask = whisker>-10;
+                [gcm,gcer,gc12_all,gc21_all] = demo(LFP,spike_serie,1,mask);
+                display(gcm);
+                display(gcer);
+                fileList(i).gcm12 = gcm(1);
+                fileList(i).gcm21 = gcm(2);
+                fileList(i).gcmall12 = gc12_all;
+                fileList(i).gcmall21 = gc21_all;
+                fileList(i).gcer12 = gcer(1);
+                fileList(i).gcer21 = gcer(2);
+            catch
+                continue
+            end
         end
     end
 end
@@ -42,12 +59,12 @@ fileListPOm = fileList;
 
 fileList = dir('awake/VPm/');
 
-downSampleSpike = 200;
+downSampleSpike = 20;
 downSampleLFP = 1;
 
 for i = 1:length(fileList)
     if length(fileList(i).name)>4
-        if (all(fileList(i).name(end-3:end) == '.mat'))
+        if all(fileList(i).name(end-3:end) == '.mat')
             data = load([fileList(i).folder '/' fileList(i).name]);
             display(fileList(i).name)
 
@@ -63,20 +80,33 @@ for i = 1:length(fileList)
             spike_serie = reshape(spike_serie,floor(size(spike_serie,2)/downSampleSpike),downSampleSpike);
             spike_serie = sum(spike_serie,2);
             spike_serie = spike_serie(1:100*floor(size(spike_serie,1)/100));
+            
+            whisker = data.Triggers.whisker*1;
+            whisker = whisker(1:downSampleSpike*floor(size(whisker,2)/downSampleSpike));
+            whisker = reshape(whisker,floor(size(whisker,2)/downSampleSpike),downSampleSpike);
+            whisker = sum(whisker,2);
+            whisker = whisker(1:100*floor(size(spike_serie,1)/100));
+
 
             LFP = reshape(LFP, [floor(size(LFP,1)/100),100]);
             spike_serie = reshape(spike_serie, [floor(size(spike_serie,1)/100),100]);
+            whisker = reshape(whisker, [floor(size(whisker,1)/100),100]);
 
             minSize = min(size(LFP,1),size(spike_serie,1));
             LFP = LFP(1:minSize,:);
             spike_serie = spike_serie(1:minSize,:);
             fprintf('Analysis for N= %d\n',i)
             try
-                [gcm,gcer] = demo(LFP,spike_serie,1);
+                mask = whisker>-10;
+                [gcm,gcer,gc12_all,gc21_all] = demo(LFP,spike_serie,1,mask);
                 display(gcm);
                 display(gcer);
-                fileList(i).gcm = gcm;
-                fileList(i).gcer = gcer;
+                fileList(i).gcm12 = gcm(1);
+                fileList(i).gcm21 = gcm(2);
+                fileList(i).gcmall12 = gc12_all;
+                fileList(i).gcmall21 = gc21_all;
+                fileList(i).gcer12 = gcer(1);
+                fileList(i).gcer21 = gcer(2);
             catch
                 continue
             end
